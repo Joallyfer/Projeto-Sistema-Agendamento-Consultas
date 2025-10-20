@@ -1,27 +1,42 @@
 using Microsoft.EntityFrameworkCore;
 using SistemaAgendamento.Data;
 using SistemaAgendamento.Models;
+using System.Text.Json.Serialization; // 👈 necessário para o ReferenceHandler
 
 var builder = WebApplication.CreateBuilder(args);
 
-// DbContext (lendo a string DefaultConnection; cai no fallback se não existir)
+// ================================================================
+// CONFIGURAÇÃO DO BANCO DE DADOS
+// ================================================================
+
+// Responsável por configurar o serviço de banco de dados utilizando Entity Framework 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
 
+// ================================================================
+// CONFIGURAÇÃO DO JSON (evita erro de ciclo infinito no relacionamento)
+// ================================================================
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles; // 👈 evita loop Cliente↔Agendamento
+    options.SerializerOptions.WriteIndented = true; // 👈 deixa o JSON formatado e legível
+});
 
 var app = builder.Build();
 
-// Cria o banco (e tabelas) se ainda não existir
+// ================================================================
+// CRIA O BANCO E AS TABELAS AUTOMATICAMENTE
+// ================================================================
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.EnsureCreated();
 }
 
-// ===================================================================
+// ================================================================
 // CLIENTES - CRUD
-// ===================================================================
+// ================================================================
 
 // Listar todos
 app.MapGet("/clientes", async (AppDbContext db) =>
@@ -67,9 +82,9 @@ app.MapDelete("/clientes/{id:int}", async (AppDbContext db, int id) =>
     return Results.NoContent();
 });
 
-// ===================================================================
+// ================================================================
 // PROFISSIONAIS - CRUD
-// ===================================================================
+// ================================================================
 
 // Listar todos
 app.MapGet("/profissionais", async (AppDbContext db) =>
@@ -97,7 +112,6 @@ app.MapPut("/profissionais/{id:int}", async (AppDbContext db, int id, Profission
 
     p.Nome = input.Nome;
     p.Especialidade = input.Especialidade;
-    // se tiver Email/Telefone no seu model, atualize aqui também
 
     await db.SaveChangesAsync();
     return Results.Ok(p);
@@ -114,9 +128,9 @@ app.MapDelete("/profissionais/{id:int}", async (AppDbContext db, int id) =>
     return Results.NoContent();
 });
 
-// ===================================================================
+// ================================================================
 // AGENDAMENTOS - CRUD (com includes e regra de conflito de horário)
-// ===================================================================
+// ================================================================
 
 // Listar todos (com Cliente e Profissional)
 app.MapGet("/agendamentos", async (AppDbContext db) =>
@@ -161,12 +175,10 @@ app.MapPut("/agendamentos/{id:int}", async (AppDbContext db, int id, Agendamento
     var ag = await db.Agendamentos.FindAsync(id);
     if (ag is null) return Results.NotFound("Agendamento não encontrado.");
 
-    // Verifica existência de FK
     if (await db.Clientes.FindAsync(input.ClienteId) is null ||
         await db.Profissionais.FindAsync(input.ProfissionalId) is null)
         return Results.BadRequest("Cliente ou Profissional inválido.");
 
-    // Se alterou DataHora ou Profissional, verifica conflito (ignorando o próprio ID)
     bool conflito = await db.Agendamentos.AnyAsync(a =>
         a.Id != id &&
         a.ProfissionalId == input.ProfissionalId &&
@@ -175,7 +187,6 @@ app.MapPut("/agendamentos/{id:int}", async (AppDbContext db, int id, Agendamento
     if (conflito)
         return Results.BadRequest("Conflito de horário: este profissional já possui agendamento neste horário.");
 
-    // Atualiza campos
     ag.DataHora = input.DataHora;
     ag.Observacoes = input.Observacoes;
     ag.ClienteId = input.ClienteId;

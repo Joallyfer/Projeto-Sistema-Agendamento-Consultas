@@ -3,7 +3,7 @@ using SistemaAgendamento.Models;
 
 namespace SistemaAgendamento.Data;
 
-// Classe responsável pela conexão com o banco de dados
+// Classe responsável por conectar o banco de dados com o Código
 public class AppDbContext : DbContext
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
