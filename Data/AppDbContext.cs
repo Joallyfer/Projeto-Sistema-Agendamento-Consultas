@@ -12,4 +12,3 @@ public class AppDbContext : DbContext
     public DbSet<Profissional> Profissionais { get; set; }
     public DbSet<Agendamento> Agendamentos { get; set; }
 }
-
