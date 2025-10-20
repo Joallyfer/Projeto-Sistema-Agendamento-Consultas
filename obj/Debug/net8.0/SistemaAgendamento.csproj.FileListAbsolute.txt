@@ -187,3 +187,4 @@ C:\Users\Usuario\OneDrive\Desktop\Joallyfer\Proj. Desenvolvimento de software vi
 C:\Users\Usuario\OneDrive\Desktop\Joallyfer\Proj. Desenvolvimento de software visual\SistemaAgendamento\obj\Debug\net8.0\SistemaAgendamento.pdb
 C:\Users\Usuario\OneDrive\Desktop\Joallyfer\Proj. Desenvolvimento de software visual\SistemaAgendamento\obj\Debug\net8.0\SistemaAgendamento.genruntimeconfig.cache
 C:\Users\Usuario\OneDrive\Desktop\Joallyfer\Proj. Desenvolvimento de software visual\SistemaAgendamento\obj\Debug\net8.0\ref\SistemaAgendamento.dll
+C:\Users\Usuario\OneDrive\Desktop\Joallyfer\Proj. Desenvolvimento de software visual\SistemaAgendamento\obj\Debug\net8.0\SistemaAgendamento.sourcelink.json

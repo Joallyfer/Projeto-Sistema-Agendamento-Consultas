@@ -6,11 +6,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 // DbContext (lendo a string DefaultConnection; cai no fallback se não existir)
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite(
-        builder.Configuration.GetConnectionString("DefaultConnection")
-        ?? "Data Source=clinica.db"
-    )
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
+
 
 var app = builder.Build();
 
